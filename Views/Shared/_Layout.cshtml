@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] – PrepaidWallet</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="~/css/site.css" />
+</head>
+<body>
+
+<div class="app-shell">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <div class="brand-icon">
+                <i class="bi bi-lightning-charge-fill"></i>
+            </div>
+            <div class="brand-text">
+                <span class="brand-name">PrepaidWallet</span>
+                <span class="brand-sub">Operator Console</span>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <div class="nav-section-label">Main</div>
+            <a class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "active" : "")"
+               asp-controller="Home" asp-action="Index">
+                <i class="bi bi-grid-1x2-fill"></i>
+                <span>Dashboard</span>
+            </a>
+            <a class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "UsersView" ? "active" : "")"
+               asp-controller="UsersView" asp-action="Index">
+                <i class="bi bi-people-fill"></i>
+                <span>Users</span>
+            </a>
+            <a class="nav-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "TransactionsView" ? "active" : "")"
+               asp-controller="TransactionsView" asp-action="Index">
+                <i class="bi bi-arrow-left-right"></i>
+                <span>Transactions</span>
+            </a>
+
+            <div class="nav-section-label" style="margin-top:2rem;">Developer</div>
+            <a class="nav-item" href="/swagger" target="_blank">
+                <i class="bi bi-braces"></i>
+                <span>API Docs</span>
+                <i class="bi bi-box-arrow-up-right ms-auto" style="font-size:.65rem;opacity:.5;"></i>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="operator-badge">
+                <div class="op-avatar"><i class="bi bi-person-fill"></i></div>
+                <div class="op-info">
+                    <span class="op-name">Operator</span>
+                    <span class="op-role">Admin</span>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <header class="topbar">
+            <div class="page-title">
+                <h1>@ViewData["Title"]</h1>
+                @if (ViewData["Subtitle"] != null)
+                {
+                    <p class="page-subtitle">@ViewData["Subtitle"]</p>
+                }
+            </div>
+            <div class="topbar-actions">
+                <a asp-controller="UsersView" asp-action="Create" class="btn-primary-pill">
+                    <i class="bi bi-plus-lg"></i> New User
+                </a>
+            </div>
+        </header>
+
+        <!-- Alerts -->
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert-toast success">
+                <i class="bi bi-check-circle-fill"></i>
+                <span>@TempData["Success"]</span>
+                <button onclick="this.parentElement.remove()"><i class="bi bi-x"></i></button>
+            </div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert-toast error">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                <span>@TempData["Error"]</span>
+                <button onclick="this.parentElement.remove()"><i class="bi bi-x"></i></button>
+            </div>
+        }
+
+        <div class="content-body">
+            @RenderBody()
+        </div>
+    </main>
+</div>
+
+<script src="~/js/site.js"></script>
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

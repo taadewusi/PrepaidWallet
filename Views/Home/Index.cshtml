@@ -1,0 +1,95 @@
+@model DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+    ViewData["Subtitle"] = "Prepaid account overview";
+}
+
+<!-- Stat Cards -->
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon teal"><i class="bi bi-people-fill"></i></div>
+        <div class="stat-body">
+            <span class="stat-value">@Model.TotalUsers</span>
+            <span class="stat-label">Total Users</span>
+        </div>
+        <div class="stat-delta positive">@Model.ActiveUsers active</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon gold"><i class="bi bi-wallet2"></i></div>
+        <div class="stat-body">
+            <span class="stat-value">₦@Model.TotalBalance.ToString("N0")</span>
+            <span class="stat-label">Total Balance</span>
+        </div>
+        <div class="stat-delta">Across all accounts</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon green"><i class="bi bi-arrow-down-circle-fill"></i></div>
+        <div class="stat-body">
+            <span class="stat-value">₦@Model.TotalCredits.ToString("N0")</span>
+            <span class="stat-label">Total Credits</span>
+        </div>
+        <div class="stat-delta positive">All time</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon red"><i class="bi bi-arrow-up-circle-fill"></i></div>
+        <div class="stat-body">
+            <span class="stat-value">₦@Model.TotalDebits.ToString("N0")</span>
+            <span class="stat-label">Total Debits</span>
+        </div>
+        <div class="stat-delta negative">All time</div>
+    </div>
+</div>
+
+<!-- Recent Transactions -->
+<div class="panel" style="margin-top:2rem;">
+    <div class="panel-header">
+        <h2 class="panel-title"><i class="bi bi-clock-history"></i> Recent Transactions</h2>
+        <a asp-controller="TransactionsView" asp-action="Index" class="panel-link">View all <i class="bi bi-arrow-right"></i></a>
+    </div>
+
+    @if (!Model.RecentTransactions.Any())
+    {
+        <div class="empty-state">
+            <i class="bi bi-inbox"></i>
+            <p>No transactions yet.</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-wrap">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>User</th>
+                        <th>Type</th>
+                        <th>Amount</th>
+                        <th>Balance After</th>
+                        <th>Operator</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var t in Model.RecentTransactions)
+                    {
+                        <tr>
+                            <td><span class="user-chip">@t.PrepaidUser?.FullName</span></td>
+                            <td>
+                                <span class="badge @(t.TransactionType == TransactionType.Credit ? "badge-credit" : "badge-debit")">
+                                    @(t.TransactionType == TransactionType.Credit
+                                        ? "↓ Credit"
+                                        : "↑ Debit")
+                                </span>
+                            </td>
+                            <td class="amount @(t.TransactionType == TransactionType.Credit ? "credit" : "debit")">
+                                @(t.TransactionType == TransactionType.Credit ? "+" : "-")₦@t.Amount.ToString("N2")
+                            </td>
+                            <td>₦@t.BalanceAfter.ToString("N2")</td>
+                            <td>@t.OperatorName</td>
+                            <td class="date-col">@t.CreatedAt.ToString("dd MMM yyyy, HH:mm")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

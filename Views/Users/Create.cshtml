@@ -1,0 +1,55 @@
+@model PrepaidWallet.DTOs.CreateUserRequest
+@{
+    ViewData["Title"] = "New User";
+    ViewData["Subtitle"] = "Register a new prepaid account";
+}
+
+<div class="form-page-wrap">
+    <div class="form-card">
+        <div class="form-card-header">
+            <i class="bi bi-person-plus-fill"></i>
+            <div>
+                <h2>Create Prepaid User</h2>
+                <p>Fill in the details below to register a new account</p>
+            </div>
+        </div>
+
+        <form asp-action="Create" method="post">
+            @Html.AntiForgeryToken()
+
+            <div asp-validation-summary="ModelOnly" class="validation-summary"></div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label asp-for="FullName">Full Name</label>
+                    <input asp-for="FullName" class="form-input" placeholder="e.g. Adaeze Okonkwo" />
+                    <span asp-validation-for="FullName" class="field-error"></span>
+                </div>
+                <div class="form-group">
+                    <label asp-for="PhoneNumber">Phone Number</label>
+                    <input asp-for="PhoneNumber" class="form-input" placeholder="e.g. 08012345678" />
+                    <span asp-validation-for="PhoneNumber" class="field-error"></span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Email">Email Address</label>
+                <input asp-for="Email" type="email" class="form-input" placeholder="e.g. user@email.com" />
+                <span asp-validation-for="Email" class="field-error"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="InitialBalance">Initial Balance (₦)</label>
+                <input asp-for="InitialBalance" type="number" min="0" step="0.01" class="form-input" placeholder="0.00" />
+                <span class="field-hint">Leave as 0 if no opening balance is required.</span>
+            </div>
+
+            <div class="form-actions">
+                <a asp-action="Index" class="btn-ghost">Cancel</a>
+                <button type="submit" class="btn-primary-pill">
+                    <i class="bi bi-check-lg"></i> Create User
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

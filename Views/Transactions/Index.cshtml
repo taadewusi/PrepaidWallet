@@ -1,0 +1,103 @@
+@model IEnumerable<PrepaidWallet.DTOs.TransactionResponse>
+@{
+    ViewData["Title"] = "Transactions";
+    ViewData["Subtitle"] = "Full audit log of all balance movements";
+}
+
+<div class="panel">
+    <div class="panel-header">
+        <h2 class="panel-title"><i class="bi bi-arrow-left-right"></i> All Transactions</h2>
+        <div class="filter-pills">
+            <button class="filter-pill active" data-filter="all">All</button>
+            <button class="filter-pill" data-filter="Credit">Credits</button>
+            <button class="filter-pill" data-filter="Debit">Debits</button>
+        </div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="empty-state">
+            <i class="bi bi-receipt"></i>
+            <p>No transactions recorded yet.</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-toolbar">
+            <div class="search-box">
+                <i class="bi bi-search"></i>
+                <input type="text" id="txnSearch" placeholder="Search by user or operator..." />
+            </div>
+            <span class="record-count">@Model.Count() records</span>
+        </div>
+
+        <div class="table-wrap">
+            <table class="data-table" id="txnTable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>User</th>
+                        <th>Type</th>
+                        <th>Amount</th>
+                        <th>Balance Before</th>
+                        <th>Balance After</th>
+                        <th>Remark</th>
+                        <th>Operator</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var t in Model)
+                    {
+                        <tr data-type="@t.TransactionType">
+                            <td class="id-col">@t.Id</td>
+                            <td>
+                                <a asp-controller="UsersView" asp-action="Details" asp-route-id="@t.PrepaidUserId" class="user-link">
+                                    <div class="avatar-circle sm">@t.UserFullName[0]</div>
+                                    @t.UserFullName
+                                </a>
+                            </td>
+                            <td>
+                                <span class="badge @(t.TransactionType == "Credit" ? "badge-credit" : "badge-debit")">
+                                    @(t.TransactionType == "Credit" ? "↓ Credit" : "↑ Debit")
+                                </span>
+                            </td>
+                            <td class="amount @(t.TransactionType == "Credit" ? "credit" : "debit")">
+                                @(t.TransactionType == "Credit" ? "+" : "-")₦@t.Amount.ToString("N2")
+                            </td>
+                            <td>₦@t.BalanceBefore.ToString("N2")</td>
+                            <td>₦@t.BalanceAfter.ToString("N2")</td>
+                            <td class="remark-col">@(string.IsNullOrEmpty(t.Remark) ? "—" : t.Remark)</td>
+                            <td>@t.OperatorName</td>
+                            <td class="date-col">@t.CreatedAt.ToString("dd MMM yyyy, HH:mm")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@section Scripts {
+<script>
+    // Filter pills
+    document.querySelectorAll('.filter-pill').forEach(pill => {
+        pill.addEventListener('click', function () {
+            document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+            this.classList.add('active');
+            const filter = this.dataset.filter;
+            document.querySelectorAll('#txnTable tbody tr').forEach(row => {
+                row.style.display = (filter === 'all' || row.dataset.type === filter) ? '' : 'none';
+            });
+        });
+    });
+
+    // Live search
+    document.getElementById('txnSearch')?.addEventListener('input', function () {
+        const q = this.value.toLowerCase();
+        document.querySelectorAll('#txnTable tbody tr').forEach(row => {
+            row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+        });
+    });
+</script>
+}

@@ -1,0 +1,180 @@
+@model PrepaidWallet.DTOs.UserResponse
+@{
+    ViewData["Title"] = Model.FullName;
+    ViewData["Subtitle"] = "Account details & balance management";
+    var transactions = ViewBag.Transactions as IEnumerable<PrepaidWallet.DTOs.TransactionResponse>;
+}
+
+<div class="detail-layout">
+
+    <!-- Left: User card -->
+    <div class="detail-sidebar">
+        <div class="user-profile-card">
+            <div class="profile-avatar">@Model.FullName[0]</div>
+            <h2 class="profile-name">@Model.FullName</h2>
+            <span class="badge @(Model.IsActive ? "badge-active" : "badge-inactive") profile-status">
+                @(Model.IsActive ? "Active" : "Inactive")
+            </span>
+
+            <div class="profile-info">
+                <div class="info-row">
+                    <i class="bi bi-telephone-fill"></i>
+                    <span>@Model.PhoneNumber</span>
+                </div>
+                <div class="info-row">
+                    <i class="bi bi-envelope-fill"></i>
+                    <span>@Model.Email</span>
+                </div>
+                <div class="info-row">
+                    <i class="bi bi-calendar3"></i>
+                    <span>Since @Model.CreatedAt.ToString("dd MMM yyyy")</span>
+                </div>
+            </div>
+
+            <div class="balance-display">
+                <span class="balance-label">Current Balance</span>
+                <span class="balance-amount">₦@Model.Balance.ToString("N2")</span>
+            </div>
+
+            @if (Model.IsActive)
+            {
+                <div class="profile-actions">
+                    <button class="btn-credit" onclick="openModal('creditModal')">
+                        <i class="bi bi-plus-circle-fill"></i> Credit
+                    </button>
+                    <button class="btn-debit" onclick="openModal('debitModal')">
+                        <i class="bi bi-dash-circle-fill"></i> Debit
+                    </button>
+                </div>
+            }
+
+            <a asp-action="Index" class="back-link">
+                <i class="bi bi-arrow-left"></i> Back to users
+            </a>
+        </div>
+    </div>
+
+    <!-- Right: Transaction history -->
+    <div class="detail-main">
+        <div class="panel">
+            <div class="panel-header">
+                <h2 class="panel-title"><i class="bi bi-clock-history"></i> Transaction History</h2>
+                <span class="badge badge-active">@transactions.Count() records</span>
+            </div>
+
+            @if (!transactions.Any())
+            {
+                <div class="empty-state">
+                    <i class="bi bi-receipt"></i>
+                    <p>No transactions yet for this account.</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-wrap">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Amount</th>
+                                <th>Before</th>
+                                <th>After</th>
+                                <th>Remark</th>
+                                <th>Operator</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var t in transactions)
+                            {
+                                <tr>
+                                    <td>
+                                        <span class="badge @(t.TransactionType == "Credit" ? "badge-credit" : "badge-debit")">
+                                            @(t.TransactionType == "Credit" ? "↓ Credit" : "↑ Debit")
+                                        </span>
+                                    </td>
+                                    <td class="amount @(t.TransactionType == "Credit" ? "credit" : "debit")">
+                                        @(t.TransactionType == "Credit" ? "+" : "-")₦@t.Amount.ToString("N2")
+                                    </td>
+                                    <td>₦@t.BalanceBefore.ToString("N2")</td>
+                                    <td>₦@t.BalanceAfter.ToString("N2")</td>
+                                    <td class="remark-col">@(string.IsNullOrEmpty(t.Remark) ? "—" : t.Remark)</td>
+                                    <td>@t.OperatorName</td>
+                                    <td class="date-col">@t.CreatedAt.ToString("dd MMM yyyy, HH:mm")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Credit Modal -->
+<div class="modal-overlay" id="creditModal">
+    <div class="modal-card">
+        <div class="modal-header credit-header">
+            <div>
+                <h3><i class="bi bi-plus-circle-fill"></i> Credit Balance</h3>
+                <p>Increase @Model.FullName's balance</p>
+            </div>
+            <button class="modal-close" onclick="closeModal('creditModal')"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <form asp-action="Credit" asp-route-id="@Model.Id" method="post">
+            @Html.AntiForgeryToken()
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Amount (₦)</label>
+                    <input type="number" name="Amount" min="1" step="0.01" class="form-input" placeholder="0.00" required />
+                </div>
+                <div class="form-group">
+                    <label>Operator Name</label>
+                    <input type="text" name="OperatorName" class="form-input" placeholder="Your name" required />
+                </div>
+                <div class="form-group">
+                    <label>Remark <span class="optional">(optional)</span></label>
+                    <input type="text" name="Remark" class="form-input" placeholder="e.g. Bank transfer top-up" />
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-ghost" onclick="closeModal('creditModal')">Cancel</button>
+                <button type="submit" class="btn-credit"><i class="bi bi-check-lg"></i> Confirm Credit</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Debit Modal -->
+<div class="modal-overlay" id="debitModal">
+    <div class="modal-card">
+        <div class="modal-header debit-header">
+            <div>
+                <h3><i class="bi bi-dash-circle-fill"></i> Debit Balance</h3>
+                <p>Reduce @Model.FullName's balance &nbsp;·&nbsp; Available: <strong>₦@Model.Balance.ToString("N2")</strong></p>
+            </div>
+            <button class="modal-close" onclick="closeModal('debitModal')"><i class="bi bi-x-lg"></i></button>
+        </div>
+        <form asp-action="Debit" asp-route-id="@Model.Id" method="post">
+            @Html.AntiForgeryToken()
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Amount (₦)</label>
+                    <input type="number" name="Amount" min="1" step="0.01" max="@Model.Balance" class="form-input" placeholder="0.00" required />
+                </div>
+                <div class="form-group">
+                    <label>Operator Name</label>
+                    <input type="text" name="OperatorName" class="form-input" placeholder="Your name" required />
+                </div>
+                <div class="form-group">
+                    <label>Remark <span class="optional">(optional)</span></label>
+                    <input type="text" name="Remark" class="form-input" placeholder="e.g. Service charge" />
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-ghost" onclick="closeModal('debitModal')">Cancel</button>
+                <button type="submit" class="btn-debit"><i class="bi bi-check-lg"></i> Confirm Debit</button>
+            </div>
+        </form>
+    </div>
+</div>

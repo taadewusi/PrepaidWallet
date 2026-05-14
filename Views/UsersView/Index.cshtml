@@ -1,0 +1,130 @@
+@model IEnumerable<PrepaidWallet.DTOs.UserResponse>
+@{
+    ViewData["Title"] = "Users";
+    ViewData["Subtitle"] = "Manage prepaid accounts";
+}
+
+<div class="panel">
+    <div class="panel-header">
+        <h2 class="panel-title"><i class="bi bi-people-fill"></i> All Users</h2>
+        <a asp-action="Create" class="btn-primary-pill">
+            <i class="bi bi-plus-lg"></i> Add User
+        </a>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="empty-state">
+            <i class="bi bi-person-x"></i>
+            <p>No users found. <a asp-action="Create">Create the first one.</a></p>
+        </div>
+    }
+    else
+    {
+        <div class="table-toolbar">
+            <div class="search-box">
+                <i class="bi bi-search"></i>
+                <input type="text" id="userSearch" placeholder="Search by name or phone..." />
+            </div>
+        </div>
+
+        <div class="table-wrap">
+            <table class="data-table" id="usersTable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Full Name</th>
+                        <th>Phone</th>
+                        <th>Email</th>
+                        <th>Balance</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var u in Model)
+                    {
+                        <tr>
+                            <td class="id-col">@u.Id</td>
+                            <td>
+                                <div class="user-name-cell">
+                                    <div class="avatar-circle">@u.FullName[0]</div>
+                                    <span>@u.FullName</span>
+                                </div>
+                            </td>
+                            <td>@u.PhoneNumber</td>
+                            <td class="email-col">@u.Email</td>
+                            <td class="balance-col">&#8358;@u.Balance.ToString("N2")</td>
+                            <td>
+                                @if (u.IsActive)
+                                {
+                                    <span class="badge badge-active">Active</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-inactive">Inactive</span>
+                                }
+                            </td>
+                            <td class="date-col">@u.CreatedAt.ToString("dd MMM yyyy")</td>
+                            <td>
+                                <div class="action-btns">
+                                    <a asp-action="Details" asp-route-id="@u.Id" class="action-btn view" title="View and Adjust">
+                                        <i class="bi bi-eye-fill"></i>
+                                    </a>
+                                    @if (u.IsActive)
+                                    {
+                                        <button type="button" class="action-btn deactivate" title="Deactivate"
+                                                onclick="confirmDeactivate(@u.Id, '@Html.Raw(u.FullName.Replace("'", "\\'"))')">
+                                            <i class="bi bi-person-dash-fill"></i>
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button type="button" class="action-btn activate" title="Activate"
+                                                onclick="confirmActivate(@u.Id, '@Html.Raw(u.FullName.Replace("'", "\\'"))')">
+                                            <i class="bi bi-person-check-fill"></i>
+                                        </button>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+<form id="deactivateForm" method="post" style="display:none;">
+    @Html.AntiForgeryToken()
+</form>
+
+<form id="activateForm" method="post" style="display:none;">
+    @Html.AntiForgeryToken()
+</form>
+
+@section Scripts {
+    <script>
+        document.getElementById('userSearch')?.addEventListener('input', function () {
+            var q = this.value.toLowerCase();
+            document.querySelectorAll('#usersTable tbody tr').forEach(function (row) {
+                row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+            });
+        });
+
+        function confirmDeactivate(id, name) {
+            if (!confirm('Deactivate ' + name + '? They will no longer be able to receive credits or debits.')) return;
+            var form = document.getElementById('deactivateForm');
+            form.action = '/UsersView/Deactivate/' + id;
+            form.submit();
+        }
+
+        function confirmActivate(id, name) {
+            if (!confirm('Re-activate ' + name + '? Their account will be restored.')) return;
+            var form = document.getElementById('activateForm');
+            form.action = '/UsersView/Activate/' + id;
+            form.submit();
+        }
+    </script>
+}
