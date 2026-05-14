@@ -90,14 +90,14 @@ Edit `appsettings.json` with your SQL Server connection:
 ```json
 {
   "ConnectionStrings": {
-    "DefaultConnection": "Server=YOUR_SERVER;Database=PrepaidWalletDb;Trusted_Connection=True;TrustServerCertificate=True;"
+    "DefaultConnection": "Server=.;Database=PrepaidWalletDb;Trusted_Connection=True;TrustServerCertificate=True;"
   }
 }
 ```
 
 **SQL Server Authentication example:**
 ```json
-"DefaultConnection": "Server=localhost;Database=PrepaidWalletDb;User Id=sa;Password=YourPassword;TrustServerCertificate=True;"
+"DefaultConnection": "Server=.;Database=PrepaidWalletDb;User Id=sa;Password=YourPassword;TrustServerCertificate=True;"
 ```
 
 ### 2. Run (migrations apply automatically on startup)
@@ -231,16 +231,3 @@ dotnet ef database update
 - Amount must always be **greater than zero**
 - `OperatorName` is **required** for all balance adjustments
 
----
-
-## Running with SQL Server in Docker (optional)
-
-```bash
-docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=YourStrong@Passw0rd" \
-  -p 1433:1433 --name mssql -d mcr.microsoft.com/mssql/server:2022-latest
-```
-
-Then update connection string:
-```
-Server=localhost,1433;Database=PrepaidWalletDb;User Id=sa;Password=YourStrong@Passw0rd;TrustServerCertificate=True;
-```
